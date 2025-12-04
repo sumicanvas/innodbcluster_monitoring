@@ -98,10 +98,6 @@ SELECT * FROM performance_schema.replication_group_member_stats\G
 | COUNT_TRANSACTIONS_LOCAL_PROPOSED          | 해당 노드에서 발생한 트랜잭션 수            |
 | LAST_CONFLICT_FREE_TRANSACTION             | 마지막으로 충돌 없이 처리된 트랜잭션          |
 
-### 이 뷰를 통해 확인할 수 있는 것들
-
-* 특정 노드에서만 apply delay 커지는 원인
-* 네트워크 이슈로 인한 지연
 
 
 ---
