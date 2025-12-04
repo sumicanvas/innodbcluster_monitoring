@@ -1,11 +1,10 @@
 
 # InnoDB Cluster 모니터링 가이드 (MySQL 8.0 / 8.4 기준)
 
-고가용성(High Availability) 환경을 구축할 때 가장 중요한 것은 **문제가 생기기 전에 미리 감지하고 대응할 수 있는 모니터링**입니다.
-MySQL InnoDB Cluster(Group Replication 기반)는 강력한 자동 장애 조치(auto failover) 기능을 제공하지만,
-**클러스터 상태를 모니터링하는 것은 서비스에 있어서 중요한 부분입니다.**
+고가용성(High Availability) 환경을 구축 후 운영 시 가장 중요한 것은 **문제가 생기기 전에 미리 감지하고 대응할 수 있는 모니터링 체계**입니다.
+MySQL InnoDB Cluster는 강력한 자동 장애 조치(auto failover) 기능을 제공하지만, 네트워크나 하드웨어 문제로도 장애는 발생할 수 있기때문에 **클러스터 상태를 모니터링하는 것은 운영에 있어서 중요한 부분입니다.**
 
-이 글에서는 InnoDB Cluster 운영자가 반드시 체크해야 할 **모니터링 포인트, 주요 Performance Schema 뷰, 유용한 Shell 명령어**를 설명합니다.
+이 글에서는 InnoDB Cluster 모니터링 방법에 대해 설명합니다.
 
 ---
 
@@ -33,7 +32,7 @@ InnoDB Cluster는 자동으로 다음을 제공합니다.
 
 ##  1. MySQL Shell을 활용한 실시간 모니터링
 
-MySQL Shell은 InnoDB Cluster의 관리 및 상태를 모니터링할 수 있는 툴입니다. 이뿐만 아니라  상태를 가장 보기 좋게 보여주는 도구입니다.
+MySQL Shell은 InnoDB Cluster의 관리 및 상태를 모니터링할 수 있는 툴입니다. 뿐만아니라 기존의 mysql client 를 대체할 수 있는 새로운 mysql client 툴로 SQL 모드를 이용하시면 기존 mysql client에서 사용했던 명령어들을 모두 사용하실 수 있습니다.
 
 ### ■ 클러스터 전체 상태
 
@@ -123,32 +122,29 @@ SELECT * FROM performance_schema.replication_group_member_stats\G
 
 ---
 
-# 5. 모니터링 포인트 요약
+# 5. 운영 환경 팁
 
-다음 항목들을 모니터링하고 필요 시에 알람을 받을 수 있도록 설정합니다.
+InnoDB Cluster 는 운영 시 주의가 필요합니다. 아래 주의사항을 꼭 숙지 후 운영하시길 바랍니다.
 
-| 모니터링 항목           | 뷰/명령어                          | 알람 기준                  |
-| ----------------- | ------------------------------ | ---------------------- |
-| 멤버 온라인 여부         | replication_group_members      | OFFLINE 시 즉시 알람        |
-| apply delay       | replication_group_member_stats | delay > 1~2초           |
-| Primary 변경        | View_ID 변화                     | 자주 바뀌면 네트워크 문제가능성         |
-| 시스템 OS 상태         |  IO 지표                      | apply delay와 상관        |
+  
+### ✔ 서버를 내리는 순서가 중요함
 
----
+InnoDB Cluster 전체노드를 shutdown할 때는 **반드시 seconday 노드부터 내려야 하며, 한개 노드가 완전히 종료된 것을 확인 후 다음 노드를 내립니다. 그리고 마지막으로 primary 노드를 종료합니다.**   
+```
+ps -ef |grep mysqld
+```  
 
-# 6. 운영 환경 팁
+### ✔ 정기점검 등의 목적으로 전체 클러스터를 내린 경우 ** 반드시 다음 명령어로 cluster 를 재시작합니다. **
+```
+dba.dba.rebootClusterFromCompleteOutage()
+```
 
-### ✔ Primary 변경이 자주 발생하면 네트워크 품질을 의심
+### 클러스터에 한개 노드만 ONLINE 상태인데 mode를 확인했을 때 R/O인 경우, 다음 명령어를 이용해 R/W 모드로 변경
 
-`VIEW_ID` 변화가 자주 일어나면 노드 간 통신 품질 문제일 가능성이 높습니다.
-
-### ✔ Router는 가급적 2~3대 이상
-
-MySQL Router는 stateless하므로 여러 대 띄워두면 장애에 매우 강합니다.
-
-### ✔ apply queue 증가 → 디스크 I/O 의심
-
-특정 노드만 지연이 심하면 대부분 디스크 성능 이슈입니다.
+```
+var c = dba.getCluster()
+c.forceQuorumUsingPartitionOf('사용자ID@해당인스턴스host명:포트')
+```
 
 
 
