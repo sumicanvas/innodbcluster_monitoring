@@ -10,6 +10,9 @@ MySQL InnoDB Cluster(Group Replication 기반)는 강력한 자동 장애 조치
 ---
 
 ## InnoDB Cluster 
+
+<img width="878" height="916" alt="image" src="https://github.com/user-attachments/assets/bf6b2f44-b859-4b8e-92cf-db9b7d418028" />  
+
 InnoDB Cluster는 자동으로 다음을 제공합니다.
 
 * Auto Failover
