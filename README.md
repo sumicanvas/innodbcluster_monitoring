@@ -52,9 +52,8 @@ dba.getCluster().status({extended:1})
 | ----------- | --------------------------- |
 | status      | ONLINE / OFFLINE            |
 | topology    | Primary / Secondary 역할      |
-| memberState | ONLINE / ERROR / RECOVERING |
-| lag         | Apply 지연 시간                 |
-| lastError   | 최근 GR 오류 메시지                |
+| mode       |  R/W / R/O            |
+| statusText   | GR 오류 메시지 포함                |
 
 **extended 모드**는 delay, transaction queue 등 보다 상세한 정보를 보여줍니다.
 
