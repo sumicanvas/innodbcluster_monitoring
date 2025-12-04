@@ -31,9 +31,9 @@ InnoDB Cluster는 자동으로 다음을 제공합니다.
 
 ---
 
-#  1. MySQL Shell을 활용한 실시간 모니터링
+##  1. MySQL Shell을 활용한 실시간 모니터링
 
-MySQL Shell은 InnoDB Cluster 상태를 가장 보기 좋게 보여주는 도구입니다.
+MySQL Shell은 InnoDB Cluster의 관리 및 상태를 모니터링할 수 있는 툴입니다. 이뿐만 아니라  상태를 가장 보기 좋게 보여주는 도구입니다.
 
 ### ■ 클러스터 전체 상태
 
@@ -42,6 +42,9 @@ dba.getCluster().status()
 또는
 dba.getCluster().status({extended:1})
 ```
+
+<img width="614" height="729" alt="image" src="https://github.com/user-attachments/assets/173fc202-d380-4212-b28d-72a5460dcdaa" />
+
 
 확인 가능 항목:
 
@@ -57,7 +60,7 @@ dba.getCluster().status({extended:1})
 
 ---
 
-# 2. replication_group_members – 기본 상태 확인
+## 2. replication_group_members – 기본 상태 확인
 
 performance_schema의 replication_group_members 테이블을 통해 클러스터 멤버의 온라인 여부를 확인합니다.
 
@@ -65,6 +68,8 @@ performance_schema의 replication_group_members 테이블을 통해 클러스터
 SELECT MEMBER_ID, MEMBER_HOST, MEMBER_PORT, MEMBER_STATE
 FROM performance_schema.replication_group_members;
 ```
+<img width="898" height="199" alt="image" src="https://github.com/user-attachments/assets/cfd2965e-ea3f-44f3-b361-4b8d4f626be4" />
+
 
 | MEMBER_STATE | 의미         |
 | ------------ | ---------- |
@@ -76,13 +81,14 @@ FROM performance_schema.replication_group_members;
 
 ---
 
-# 3. replication_group_member_stats – 핵심 지표 모음
+## 3. replication_group_member_stats – 핵심 지표
 
-InnoDB Cluster의 내부 동작(certificate, apply queue)을 확인할 수 있는 가장 중요한 뷰입니다.
+InnoDB Cluster의 내부 동작을 확인할 수 있는 가장 중요한 뷰입니다. 특히 아래표의 내용들을 위주로 모니터링하면 좋을 것 같습니다.
 
 ```sql
 SELECT * FROM performance_schema.replication_group_member_stats\G
 ```
+<img width="832" height="347" alt="image" src="https://github.com/user-attachments/assets/9c398a68-dfc1-44f0-8b58-354761ccf870" />
 
 | 컬럼                                         | 설명                            |
 | ------------------------------------------ | ----------------------------- |
@@ -94,37 +100,20 @@ SELECT * FROM performance_schema.replication_group_member_stats\G
 | COUNT_TRANSACTIONS_LOCAL_PROPOSED          | 해당 노드에서 발생한 트랜잭션 수            |
 | LAST_CONFLICT_FREE_TRANSACTION             | 마지막으로 충돌 없이 처리된 트랜잭션          |
 
-### ✔️ 이 뷰로 진단할 수 있는 것들
+### 이 뷰를 통해 확인할 수 있는 것들
 
 * 특정 노드에서만 apply delay 커지는 원인
-* certification 충돌 증가 여부
 * 네트워크 이슈로 인한 지연
-* Primary failover 이후 특정 멤버만 재join 느린 이유
 
-InnoDB Cluster 운영자에게 가장 중요한 성능 뷰입니다.
 
 ---
 
-# 🧩 4. Router 모니터링
+## 4. Router 모니터링
 
-MySQL Router는 단순 Proxy처럼 보이지만, 실제로는 클러스터 상태 기반 라우팅을 처리하는 중요한 레이어입니다.
 
-### ■ Router 상태 점검
-
-```bash
-mysqlrouter -s
-```
-
-확인 가능 항목:
-
-* metadata 연결 여부
-* R/W backend 가용 여부
-* Router bootstrap 정보
-* routing endpoint 상태
-
-### ■ Router 로그 체크 (중요)
-
-다음 로그가 보이면 주의가 필요합니다:
+### ■ Router 로그 체크 
+  
+다음 메세지들이 로그에 확인된다면 문제가 발생했을 가능성이 높습니다.
 
 | 메시지                          | 의미                             |
 | ---------------------------- | ------------------------------ |
@@ -132,26 +121,23 @@ mysqlrouter -s
 | All R/W backends unavailable | Primary를 찾지 못함                 |
 | Server down                  | 특정 노드 장애 감지                    |
 
-운영 환경에서는 **Router 로그 모니터링**도 필수입니다.
 
 ---
 
-# 🧩 5. 모니터링 포인트 요약
+# 5. 모니터링 포인트 요약
 
-아래는 실무에서 자주 쓰는 핵심 체크 포인트입니다.
+다음 항목들을 모니터링하고 필요 시에 알람을 받을 수 있도록 설정합니다.
 
 | 모니터링 항목           | 뷰/명령어                          | 알람 기준                  |
 | ----------------- | ------------------------------ | ---------------------- |
 | 멤버 온라인 여부         | replication_group_members      | OFFLINE 시 즉시 알람        |
 | apply delay       | replication_group_member_stats | delay > 1~2초           |
-| certification 충돌  | COUNT_CONFLICTS_DETECTED       | 0 이상 지속 증가             |
-| Router backend 상태 | mysqlrouter -s                 | RW backend UNAVAILABLE |
-| Primary 변경        | View_ID 변화                     | 자주 바뀌면 네트워크 문제         |
-| 시스템 OS 상태         | CPU/IO 지표                      | apply delay와 직결        |
+| Primary 변경        | View_ID 변화                     | 자주 바뀌면 네트워크 문제가능성         |
+| 시스템 OS 상태         |  IO 지표                      | apply delay와 상관        |
 
 ---
 
-# 🧩 6. 운영 환경 팁
+# 6. 운영 환경 팁
 
 ### ✔ Primary 변경이 자주 발생하면 네트워크 품질을 의심
 
@@ -165,16 +151,7 @@ MySQL Router는 stateless하므로 여러 대 띄워두면 장애에 매우 강�
 
 특정 노드만 지연이 심하면 대부분 디스크 성능 이슈입니다.
 
----
 
-# 🏁 마무리
 
-InnoDB Cluster는 자동화된 고가용성 기능을 갖추고 있지만,
-**클러스터 내부에서 어떤 일이 일어나고 있는지 모니터링하는 것이 운영 안정성의 핵심**입니다.
 
-이번 글에서 소개한 Performance Schema 뷰와 Shell 명령어만 잘 활용해도
-장애의 대부분을 빠르게 감지하고 대응할 수 있습니다.
-
-다음 포스팅에서는 실 운영에서 자주 발생하는 InnoDB Cluster 장애 사례와
-**트러블슈팅 가이드**를 소개하겠습니다.
 
