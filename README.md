@@ -99,22 +99,43 @@ SELECT * FROM performance_schema.replication_group_member_stats\G
 | LAST_CONFLICT_FREE_TRANSACTION             | 마지막으로 충돌 없이 처리된 트랜잭션          |
 
 
-
 ---
 
-## 4. Router 모니터링
+## 4. InnoDB Cluster 메타데이터 
 
 
-### ■ Router 로그 체크 
+InnoDB Cluster의 메타데이터를 관리하는 테이블은 mysql_innodb_cluster_metadata 스키마 내에 clusters 입니다. 내용이 많아서 다 확인하기는 어렵지만 InnoDB Cluster를 오동작해 메타데이터가 맞지 않을 경우 이 스키마를 삭제하고 InnoDB Cluster를 재구축해야 할 수 있습니다.
+클러스터에 대한 전체 메타 데이터가 담겨있는 테이블입니다.
+
+```sql
+SELECT * FROM mysql_innodb_cluster_metadata.clusters\G
+```
+<img width="865" height="649" alt="image" src="https://github.com/user-attachments/assets/c38237a1-adb0-44a5-82a0-31b6b00f0753" />  
+
+### 클러스터 기본 정보
+| 옵션명            | 설명                                                    | 
+| -------------- | ----------------------------------------------------- | 
+| `cluster_id`   | 클러스터를 식별하는 UUID                                       | 
+| `cluster_name` | 클러스터 이름(MySQL Shell에서 표시됨)                            | 
+| `cluster_type` | 클러스터 유형 (`gr` = Group Replication)                    | 
+| `primary_mode` | Primary 모드 (`pm`= single-primary, `mp`=multi-primary) | 
+| `description`  | 클러스터 설명(옵션)                                           | 
+| `options`      | 예약 옵션 (일반적으로 NULL)                                    | 
+
+
+### attributes 필드 주요 옵션 + 기본값  
   
-다음 메세지들이 로그에 확인된다면 문제가 발생했을 가능성이 높습니다.
-
-| 메시지                          | 의미                             |
-| ---------------------------- | ------------------------------ |
-| Metadata cache update failed | Router가 Cluster metadata 접근 실패 |
-| All R/W backends unavailable | Primary를 찾지 못함                 |
-| Server down                  | 특정 노드 장애 감지                    |
-
+| 옵션명                                       | 설명                                       | 기본값(Default)          |
+| ----------------------------------------- | ---------------------------------------- | --------------------- |
+| `adopted`                                 | 기존 GR 클러스터를 Shell에서 가져왔는지 여부             | `0`                   |
+| `default`                                 | 기본(Default) 클러스터인지 여부                    | `true`                |
+| `opt_memberAuthType`                      | GR 멤버 간 인증 타입 (`PASSWORD`, `X509`)       | `PASSWORD`            |
+| `opt_gtidSetIsComplete`                   | GTID 세트가 완전한지 여부 (Auto failover 안정성에 영향) | `false`               |
+| `opt_manualStartOnBoot`                   | MySQL 서버 재시작 시 GR 자동 시작 여부               | `false`               |
+| `opt_transactionSizeLimit`                | 단일 트랜잭션 최대 크기(Byte 단위)                   | `150000000` (약 150MB) |
+| `opt_replicationAllowedHost`              | GR 멤버 조인 허용 호스트 (IP 또는 `%`)              | `%`                   |
+| `capabilities → communicationStack.value` | GR 통신 스택                                 | `MYSQL`               |
+| `group_replication_group_name`            | GR 그룹 UUID                               | 자동 생성 값               |
 
 ---
 
