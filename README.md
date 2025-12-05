@@ -151,7 +151,7 @@ InnoDB Cluster 전체노드를 shutdown할 때는 **반드시 seconday 노드부
 ps -ef |grep mysqld
 ```  
 
-### ✔ 정기점검 등의 목적으로 전체 클러스터를 내린 경우 ** 반드시 다음 명령어로 cluster 를 재시작합니다. **
+### ✔ 정기점검 등의 목적으로 전체 클러스터를 내린 경우 반드시 다음 명령어로 cluster 를 재시작합니다.
 ```
 dba.dba.rebootClusterFromCompleteOutage()
 ```
