@@ -104,8 +104,8 @@ SELECT * FROM performance_schema.replication_group_member_stats\G
 ## 4. InnoDB Cluster 메타데이터 
 
 
-InnoDB Cluster의 메타데이터를 관리하는 테이블은 mysql_innodb_cluster_metadata 스키마 내에 clusters 입니다. 내용이 많아서 다 확인하기는 어렵지만 InnoDB Cluster를 오동작해 메타데이터가 맞지 않을 경우 이 스키마를 삭제하고 InnoDB Cluster를 재구축해야 할 수 있습니다.
-클러스터에 대한 전체 메타 데이터가 담겨있는 테이블입니다.
+InnoDB Cluster의 메타데이터를 관리하는 테이블은 mysql_innodb_cluster_metadata 스키마 내에 clusters 입니다. 내용이 많아서 다 확인하기는 어렵지만 InnoDB Cluster의 메타데이터가 맞지 않을 경우 이 스키마를 삭제하고 InnoDB Cluster를 재구축해야 할 수 있습니다.
+클러스터에 대한 전체 메타 데이터가 담겨있는 테이블입니다. 
 
 ```sql
 SELECT * FROM mysql_innodb_cluster_metadata.clusters\G
