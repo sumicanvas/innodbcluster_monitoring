@@ -130,11 +130,11 @@ SELECT * FROM mysql_innodb_cluster_metadata.clusters\G
 | `adopted`                                 | 기존 GR 클러스터를 Shell에서 가져왔는지 여부             | `0`                   |
 | `default`                                 | 기본(Default) 클러스터인지 여부                    | `true`                |
 | `opt_memberAuthType`                      | GR 멤버 간 인증 타입 (`PASSWORD`, `X509`)       | `PASSWORD`            |
-| `opt_gtidSetIsComplete`                   | GTID 세트가 완전한지 여부 (Auto failover 안정성에 영향) | `false`               |
+| `opt_gtidSetIsComplete`                   | GTID 세트가 완전한지 여부  | `false`               |
 | `opt_manualStartOnBoot`                   | MySQL 서버 재시작 시 GR 자동 시작 여부               | `false`               |
 | `opt_transactionSizeLimit`                | 단일 트랜잭션 최대 크기(Byte 단위)                   | `150000000` (약 150MB) |
 | `opt_replicationAllowedHost`              | GR 멤버 조인 허용 호스트 (IP 또는 `%`)              | `%`                   |
-| `capabilities → communicationStack.value` | GR 통신 스택                                 | `MYSQL`               |
+| `capabilities → communicationStack.value` | GR 통신                                  | `MYSQL`               |
 | `group_replication_group_name`            | GR 그룹 UUID                               | 자동 생성 값               |
 
 ---
