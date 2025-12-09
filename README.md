@@ -153,7 +153,7 @@ ps -ef |grep mysqld
 
 ### ✔ 정기점검 등의 목적으로 전체 클러스터를 내린 경우 반드시 다음 명령어로 cluster 를 재시작합니다.
 ```
-dba.dba.rebootClusterFromCompleteOutage()
+dba.rebootClusterFromCompleteOutage()
 ```
 
 ### 클러스터에 한개 노드만 ONLINE 상태인데 mode를 확인했을 때 R/O인 경우, 다음 명령어를 이용해 R/W 모드로 변경
